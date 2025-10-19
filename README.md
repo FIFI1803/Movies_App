@@ -1,196 +1,258 @@
+A Movies App
+
+This is a small, responsive React + Vite app to search and browse movies using The Movie Database (TMDB) and to track trending searches with Appwrite.
+
+This repository is a frontend application built with React, Vite and Tailwind CSS. It queries the TMDB REST API for movie data and uses Appwrite for storing simple analytics (search counts) and a trending list.
+
+## Quick overview
+
 # Movies App
 
-A lightweight, responsive Movies web app built with plain JavaScript, CSS, and HTML. Movies App lets users discover movies, search by title, view details, and save favorites — all in a small, dependency-free frontend.
+This is a small, responsive React + Vite app to search and browse movies using The Movie Database (TMDB) and to track trending searches with Appwrite.
 
-Live demo: (If you host the project, add the URL here)
+This repository is a frontend application built with React, Vite and Tailwind CSS. It queries the TMDB REST API for movie data and uses Appwrite for storing simple analytics (search counts) and a trending list.
 
-## Table of Contents
+## Quick overview
 
-- [About](#about)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-  - [Option A — Open directly](#option-a---open-directly)
-  - [Option B — Serve locally (recommended)](#option-b---serve-locally-recommended)
-  - [Option C — Using npm scripts (if present)](#option-c---using-npm-scripts-if-present)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
-- [Acknowledgements](#acknowledgements)
-
-## About
-
-Movies App is a small single‑page application (SPA) that shows movie data and details. It's implemented with vanilla JavaScript (no frameworks), CSS for styling and responsiveness, and plain HTML. The project is a great starting point for learning frontend basics (fetch API, DOM manipulation, responsive design) and for building features like bookmarking and local persistence.
+- Framework: React (functional components + hooks)
+- Tooling: Vite
+- Styling: Tailwind CSS
+- External services:
+  - TMDB API for movie data and images
+  - Appwrite for storing search counts and retrieving trending movies
 
 ## Features
 
-- Browse a list of movies (popular / trending)
-- Search movies by title
-- View movie details (overview, release date, rating, poster)
-- Add / remove favorites (stored in localStorage)
-- Responsive layout for mobile and desktop
-- Lightweight, dependency-free frontend
+- Search movies by title (debounced input)
+- Browse a discovery list when no search term is provided
+- View trending movies based on search counts stored in Appwrite
+- Simple, responsive UI with movie cards and loading states
 
-## Tech Stack
+## Requirements
 
-- JavaScript (ES6+)
-- HTML5
-- CSS3 (Flexbox / Grid for layout)
-- Optional: The Movie Database (TMDB) API or any REST movie API for data
+- Node 16+ (recommended)
+- A TMDB API key
+- An Appwrite project with a database and collection configured (optional — trending/search analytics will fallback silently if Appwrite is not configured)
 
-Based on your usage, you may replace or extend the data source.
+## Environment variables
 
-## Prerequisites
+Create a file named `.env.local` in the project root with the following variables (Vite uses the VITE_ prefix):
 
-- A modern web browser (Chrome, Firefox, Edge, Safari)
-- Optional: Node.js and npm if you want to serve the project with a local dev server or use scripts
+VITE_API_KEY=your_tmdb_api_key_here
 
-## Getting Started
+If you want to use Appwrite features (recommended for trending searches), add:
 
-Clone the repository:
+VITE_APPWRITE_ENDPOINT=https://YOUR_APPWRITE_ENDPOINT/v1
+VITE_APPWRITE_PROJECT_ID=your_project_id
+VITE_APPWRITE_DATABASE_ID=your_database_id
+VITE_APPWRITE_COLLECTION_ID=your_collection_id
 
-git clone https://github.com/FIFI1803/Movies_App.git
-cd Movies_App
+Notes:
+- Do not commit secret keys to source control.
+- The app will show a friendly error message if `VITE_API_KEY` is missing.
 
-There are multiple easy ways to run the app locally.
+## Install and run
 
-### Option A - Open directly
+Install dependencies:
 
-1. Open the project folder.
-2. Double-click `index.html` (or open it in the browser).  
-   Note: Some browsers restrict fetch requests when opening files via the `file://` protocol. If you see CORS or network errors, use a local server (Option B).
-
-### Option B - Serve locally (recommended)
-
-Use a lightweight HTTP server to avoid fetch/CORS limitations:
-
-- With npx http-server:
-  npx http-server . -o
-
-- With npm package `serve`:
-  npm install -g serve
-  serve .
-
-This will open the app in your browser at http://localhost:5000 (port may vary).
-
-### Option C - Using npm scripts (if present)
-
-If the repository includes a package.json with scripts, run:
-
+```bash
 npm install
-npm start
+```
 
-(Adjust according to scripts defined in the project.)
+Run the dev server:
 
-## Configuration
+```bash
+npm run dev
+```
 
-This app may use a third‑party movie API (for example TMDB). If the code expects an API key, configure it as follows:
+Build for production:
 
-1. Create a file named `config.js` in the project root (or follow the repo's existing pattern).
-2. Add the API key (example for TMDB):
-   // config.js
-   const MOVIE_API_KEY = 'YOUR_API_KEY_HERE';
+```bash
+npm run build
+```
 
-3. Save and reload the app.
+Preview the production build locally:
 
-If the project already uses a `.env` or another config method, follow that pattern instead.
+```bash
+npm run preview
+```
 
-Important: Do not commit secret API keys to public repositories. Use environment variables or GitHub Secrets for production deployments.
+Available npm scripts (from `package.json`):
+- `dev` — start Vite dev server
+- `build` — build production assets
+- `preview` — preview the production build
+- `lint` — run ESLint
 
-## Usage
+## How it works (brief)
 
-- Search: Type a movie title in the search field and press Enter or click Search.
-- Browse: The homepage shows a list of movies (popular / recommended).
-- Details: Click a movie card to open the details view (overview, release date, rating).
-- Favorites: Click the "Add to favorites" or star icon; favorites are stored in localStorage and persist between sessions.
-- Remove favorites: In the favorites view, remove movies you no longer want.
+- `src/App.jsx` contains the main UI and logic. It reads `VITE_API_KEY` from the environment and fetches movies from TMDB. When a user searches, the app makes a TMDB search request; when no query is provided it falls back to a discover endpoint.
+- Search input is debounced (using `react-use`), and successful search requests also call `updateSearchCount` in `src/appwrite.js` which stores/increments search counts in Appwrite.
+- `getTrendingMovies` (in `src/appwrite.js`) reads the top results from Appwrite and the app renders them at the top of the UI.
 
-Customize the UI by editing `styles.css` or the relevant CSS files.
+If Appwrite environment variables are not present or Appwrite calls fail, the app logs errors but remains usable (search and discovery via TMDB still work).
 
-## Project Structure (example)
+## Project structure (important files)
 
-The actual project layout may vary. A typical structure:
+- `index.html` — Vite entry HTML
+- `src/main.jsx` — React entry
+- `src/App.jsx` — Main application component and data fetching
+- `src/appwrite.js` — Appwrite client helpers (updateSearchCount, getTrendingMovies)
+- `src/components/Search.jsx` — Search input component
+- `src/components/MovieCard.jsx` — Movie card renderer
+- `src/components/Spinner.jsx` — Loading spinner
+- `src/index.css` / `tailwind.config.cjs` — Tailwind configuration and global styles
 
-- index.html — main HTML file
-- css/
-  - styles.css — global styles
-- js/
-  - app.js — main JavaScript
-  - api.js — functions for API calls
-  - ui.js — DOM helpers and rendering
-  - storage.js — localStorage helpers for favorites
-- assets/
-  - images/ — logos, placeholders
-- config.js — (optional) API key or runtime config
+## Debugging & troubleshooting
 
-Adjust to match this repo's real structure.
+- If you see "Missing API key" in the UI, confirm `VITE_API_KEY` is set in `.env.local` and restart the dev server.
+- If TMDB images are broken, check how poster URLs are composed (`https://image.tmdb.org/t/p/w500/${poster_path}`) and confirm the movie object contains `poster_path`.
+- Appwrite errors are logged to the console; confirm endpoint and project/database/collection IDs, and that CORS/permissions are configured on your Appwrite instance.
 
-## Testing
+## Tests
 
-There are no automated tests included by default. To test manually:
-
-- Verify search results return expected movies.
-- Add/remove favorites and refresh — favorites should persist.
-- Resize the browser to confirm responsive layout.
-- Check network panel for API requests and handle errors.
-
-To add unit or integration tests (optional), consider Jest or Playwright for E2E tests.
-
-## Troubleshooting
-
-- Blank page / errors in console:
-  - Open DevTools (F12) and check console for errors or missing files.
-  - If fetch fails, ensure you're serving over HTTP (use Option B) or check API key validity.
-- API rate limits:
-  - Public movie APIs often limit requests. Add caching or reduce query frequency.
-- Images not loading:
-  - Verify the image URL pattern from the API. TMDB uses base image URLs; ensure you compose full poster URLs correctly.
+There are no automated tests included. For UI testing, consider adding React Testing Library and Jest or Playwright for E2E flows.
 
 ## Contributing
 
-Contributions welcome! Recommended workflow:
+Contributions are welcome. Suggested workflow:
 
-1. Fork the repo.
-2. Create a branch: git checkout -b feat/my-feature
-3. Make changes, test locally.
-4. Commit: git commit -m "Add feature"
-5. Push: git push origin feat/my-feature
-6. Open a Pull Request describing the change.
+1. Fork the repository
+2. Create a feature branch
+3. Open a PR with a clear description
 
-Please open issues or PRs with clear descriptions and steps to reproduce.
+Please run the linter and test the app locally before opening a PR.
 
 ## License
 
-If you want to apply a license, add a LICENSE file. Common choice:
-
-MIT License — see LICENSE file for details.
-
-(If you want me to add a LICENSE file to this repository, tell me which license to use and I can create it.)
+No license file is included. If you'd like this project to be open source, add a LICENSE file (MIT is common) or tell me which license to add and I can create it.
 
 ## Contact
 
-Repository: https://github.com/FIFI1803/Movies_App
+Repo: https://github.com/FIFI1803/Movies_App
 
-Author: FIFI1803
+If anything in this README is incorrect or you'd like a version with additional examples (for example a `.env.example`, a sample Appwrite seed script, or GitHub Actions deploy), tell me and I will add it.
+# Movies App
 
-If you have questions, open an issue on the repo and I’ll get back to you.
+A small, responsive React + Vite app to search and browse movies using The Movie Database (TMDB) and to track trending searches with Appwrite.
 
-## Acknowledgements
+This repository is a frontend application built with React, Vite and Tailwind CSS. It queries the TMDB REST API for movie data and uses Appwrite for storing simple analytics (search counts) and a trending list.
 
-- The Movie Database (TMDB) for movie data and images (if used)
-- Any design or icon libraries that are included with the project
+## Quick overview
 
----
+- Framework: React (functional components + hooks)
+- Tooling: Vite
+- Styling: Tailwind CSS
+- External services:
+  - TMDB API for movie data and images
+  - Appwrite for storing search counts and retrieving trending movies
 
-If you’d like, I can:
-- Add an example config.js and .env.example
-- Create a CONTRIBUTING.md or LICENSE file
-- Add a deploy workflow (GitHub Pages or Netlify) with instructions
+## Features
 
-Tell me which you'd like and I’ll prepare the files and a PR. 
+- Search movies by title (debounced input)
+- Browse a discovery list when no search term is provided
+- View trending movies based on search counts stored in Appwrite
+- Simple, responsive UI with movie cards and loading states
+
+## Requirements
+
+- Node 16+ (recommended)
+- A TMDB API key
+- An Appwrite project with a database and collection configured (optional — trending/search analytics will fallback silently if Appwrite is not configured)
+
+## Environment variables
+
+Create a file named `.env.local` in the project root with the following variables (Vite uses the VITE_ prefix):
+
+VITE_API_KEY=your_tmdb_api_key_here
+
+If you want to use Appwrite features (recommended for trending searches), add:
+
+VITE_APPWRITE_ENDPOINT=https://YOUR_APPWRITE_ENDPOINT/v1
+VITE_APPWRITE_PROJECT_ID=your_project_id
+VITE_APPWRITE_DATABASE_ID=your_database_id
+VITE_APPWRITE_COLLECTION_ID=your_collection_id
+
+Notes:
+- Do not commit secret keys to source control.
+- The app will show a friendly error message if `VITE_API_KEY` is missing.
+
+## Install and run
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the dev server:
+
+```bash
+npm run dev
+```
+
+Build for production:
+
+```bash
+npm run build
+```
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+Available npm scripts (from `package.json`):
+- `dev` — start Vite dev server
+- `build` — build production assets
+- `preview` — preview the production build
+- `lint` — run ESLint
+
+## How it works (brief)
+
+- `src/App.jsx` contains the main UI and logic. It reads `VITE_API_KEY` from the environment and fetches movies from TMDB. When a user searches, the app makes a TMDB search request; when no query is provided it falls back to a discover endpoint.
+- Search input is debounced (using `react-use`), and successful search requests also call `updateSearchCount` in `src/appwrite.js` which stores/increments search counts in Appwrite.
+- `getTrendingMovies` (in `src/appwrite.js`) reads the top results from Appwrite and the app renders them at the top of the UI.
+
+If Appwrite environment variables are not present or Appwrite calls fail, the app logs errors but remains usable (search and discovery via TMDB still work).
+
+## Project structure (important files)
+
+- `index.html` — Vite entry HTML
+- `src/main.jsx` — React entry
+- `src/App.jsx` — Main application component and data fetching
+- `src/appwrite.js` — Appwrite client helpers (updateSearchCount, getTrendingMovies)
+- `src/components/Search.jsx` — Search input component
+- `src/components/MovieCard.jsx` — Movie card renderer
+- `src/components/Spinner.jsx` — Loading spinner
+- `src/index.css` / `tailwind.config.cjs` — Tailwind configuration and global styles
+
+## Debugging & troubleshooting
+
+- If you see "Missing API key" in the UI, confirm `VITE_API_KEY` is set in `.env.local` and restart the dev server.
+- If TMDB images are broken, check how poster URLs are composed (`https://image.tmdb.org/t/p/w500/${poster_path}`) and confirm the movie object contains `poster_path`.
+- Appwrite errors are logged to the console; confirm endpoint and project/database/collection IDs, and that CORS/permissions are configured on your Appwrite instance.
+
+## Tests
+
+There are no automated tests included. For UI testing, consider adding React Testing Library and Jest or Playwright for E2E flows.
+
+## Contributing
+
+Contributions are welcome. Suggested workflow:
+
+1. Fork the repository
+2. Create a feature branch
+3. Open a PR with a clear description
+
+Please run the linter and test the app locally before opening a PR.
+
+## License
+
+No license file is included. If you'd like this project to be open source, add a LICENSE file (MIT is common) or tell me which license to add and I can create it.
+
+## Contact
+
+Repo: https://github.com/FIFI1803/Movies_App
+
+If anything in this README is incorrect or you'd like a version with additional examples (for example a `.env.example`, a sample Appwrite seed script, or GitHub Actions deploy), tell me and I will add it.
