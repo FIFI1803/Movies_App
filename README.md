@@ -1,14 +1,8 @@
-A Movies App
-
-This is a small, responsive React + Vite app to search and browse movies using The Movie Database (TMDB) and to track trending searches with Appwrite.
-
-This repository is a frontend application built with React, Vite and Tailwind CSS. It queries the TMDB REST API for movie data and uses Appwrite for storing simple analytics (search counts) and a trending list.
-
 ## Quick overview
 
-# Movies App
+# Popcorn Time
 
-This is a small, responsive React + Vite app to search and browse movies using The Movie Database (TMDB) and to track trending searches with Appwrite.
+This is a small, responsive React + Vite app for searching and browsing movies using The Movie Database (TMDB) and tracking trending searches with Appwrite.
 
 This repository is a frontend application built with React, Vite and Tailwind CSS. It queries the TMDB REST API for movie data and uses Appwrite for storing simple analytics (search counts) and a trending list.
 
